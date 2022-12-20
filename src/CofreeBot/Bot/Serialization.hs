@@ -2,10 +2,10 @@ module CofreeBot.Bot.Serialization where
 
 --------------------------------------------------------------------------------
 
-import Control.Applicative
-import CofreeBot.Utils.ListT (emptyListT)
 import CofreeBot.Bot (Bot (..))
 import CofreeBot.Utils
+import CofreeBot.Utils.ListT (emptyListT)
+import Control.Applicative
 import Data.Text (Text)
 import Data.These
 

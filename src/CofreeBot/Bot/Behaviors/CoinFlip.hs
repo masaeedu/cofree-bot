@@ -1,36 +1,39 @@
-module CofreeBot.Bot.Behaviors.CoinFlip where
+module CofreeBot.Bot.Behaviors.CoinFlip
+  ( -- * Bot
+    coinFlipBot,
+    coinFlipMatrixBot,
+
+    -- * Serializer
+    coinFlipSerializer,
+  )
+where
 
 --------------------------------------------------------------------------------
 
-import CofreeBot.Bot
-import CofreeBot.Utils.ListT (emptyListT)
-import Control.Monad.Reader
+import CofreeBot.Bot (Bot, embedTextBot)
+import CofreeBot.Bot.Serialization (TextSerializer)
+import CofreeBot.Bot.Serialization qualified as S
 import Data.Attoparsec.Text
-import Data.Bifunctor (bimap)
-import Data.Profunctor
-import Data.Text qualified as T
-import System.Random
+import Data.Text (Text)
+import Data.Text qualified as Text
+import Network.Matrix.Client (Event, RoomID)
+import System.Random (randomIO)
 
 --------------------------------------------------------------------------------
 
 coinFlipBot :: Bot IO () () Bool
-coinFlipBot = do
-  randomIO
+coinFlipBot = randomIO
 
-simplifyCoinFlipBot :: forall s. Bot IO s () Bool -> TextBot IO s
-simplifyCoinFlipBot b = do
-  t <- ask
-  case to t of
-    Left _err -> Bot $ pure $ const emptyListT
-    Right _ -> dimap (const ()) from $ b
-  where
-    to :: T.Text -> Either T.Text ()
-    to = fmap (bimap T.pack id) $ parseOnly parseCoinFlipCommand
+coinFlipMatrixBot :: Bot IO () (RoomID, Event) (RoomID, Event)
+coinFlipMatrixBot = embedTextBot $ S.simplifyBot coinFlipBot coinFlipSerializer
 
-    from :: Bool -> T.Text
-    from = \case
-      True -> "Coin Flip Result: True"
-      False -> "Coin Flip Result: False"
+--------------------------------------------------------------------------------
 
-parseCoinFlipCommand :: Parser ()
-parseCoinFlipCommand = "flip a coin" *> pure ()
+coinFlipSerializer :: TextSerializer Bool ()
+coinFlipSerializer = S.Serializer {parser, printer}
+
+parser :: Text -> Maybe ()
+parser = either (const Nothing) Just . parseOnly ("flip a coin" *> pure ())
+
+printer :: Bool -> Text
+printer x = "Coin Flip Result: " <> Text.pack (show x)

@@ -1,29 +1,45 @@
 -- | The Simplest Bot. This module serves as an introductory example
 -- for bot construction.
 module CofreeBot.Bot.Behaviors.Hello
-  ( helloSimpleBot,
+  ( -- * Bot
+    helloBot,
     helloMatrixBot,
+
+    -- * Serializer
+    helloBotSerializer,
+    helloBotParser,
   )
 where
 
 --------------------------------------------------------------------------------
 
 import CofreeBot.Bot
-import CofreeBot.Utils.ListT (emptyListT)
-import Data.Text qualified as T
+import CofreeBot.Bot.Serialization
+import CofreeBot.Bot.Serialization qualified as S
+import Data.Text (Text)
+import Data.Text qualified as Text
+import Network.Matrix.Client (Event, RoomID)
 
 --------------------------------------------------------------------------------
 
--- | A pure, stateless bot which simply takes a 'T.Text' input and
--- produces a 'T.Text' output from it.
-helloSimpleBot :: Monad m => TextBot m s
-helloSimpleBot = Bot $ \s msg ->
-  let name = "cofree-bot"
-   in if name `T.isInfixOf` msg
-        then pure ("Are you talking to me, punk?", s)
-        else emptyListT
+-- | A pure, stateless bot which simply takes a 'Text' input and
+-- produces a 'Text' output from it.
+helloBot :: Monad m => Bot m s () Text
+helloBot = Bot $ \s () -> pure ("Are you talking to me, punk?", s)
 
 -- | We can then embed our bot in the Matrix API using
--- 'embedTextBot'.
-helloMatrixBot :: Monad m => MatrixBot m ()
-helloMatrixBot = embedTextBot $ helloSimpleBot
+-- 'liftSimpleBot'.
+helloMatrixBot :: Monad m => Bot m () (RoomID, Event) (RoomID, Event)
+helloMatrixBot = embedTextBot $ S.simplifyBot helloBot helloBotSerializer
+
+--------------------------------------------------------------------------------
+
+helloBotParser :: Text -> Maybe ()
+helloBotParser msg =
+  let name = "cofree-bot"
+   in if name `Text.isInfixOf` msg
+        then Just ()
+        else Nothing
+
+helloBotSerializer :: TextSerializer Text ()
+helloBotSerializer = Serializer helloBotParser id

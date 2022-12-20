@@ -1,44 +1,53 @@
 module CofreeBot.Bot.Behaviors.Calculator
-  ( calculatorBot,
-    simplifyCalculatorBot,
-    printCalcOutput,
+  ( -- * Bot
+    calculatorBot,
+    calculatorBot',
+    calculatorMatrixBot,
+    printer,
+
+    -- * Serializer
+    calculatorSerializer,
+
+    -- * Language
+    module Language,
   )
 where
 
 --------------------------------------------------------------------------------
 
-import CofreeBot.Bot
-import CofreeBot.Bot.Behaviors.Calculator.Language
-import CofreeBot.Utils
-import Control.Monad.Reader
-import Control.Monad.State
-import Data.Profunctor
-import Data.Text qualified as T
+import CofreeBot.Bot (Bot, embedTextBot)
+import CofreeBot.Bot.Behaviors.Calculator.Language as Language
+import CofreeBot.Bot.Serialization (TextSerializer)
+import CofreeBot.Bot.Serialization qualified as S
+import CofreeBot.Utils (type (\/))
+import Control.Monad.Reader (ask)
+import Control.Monad.State (state)
+import Data.Attoparsec.Text (parseOnly)
+import Data.Text (Text)
+import Data.Text qualified as Text
+import Network.Matrix.Client (Event, RoomID)
 
 --------------------------------------------------------------------------------
 
 calculatorBot :: Bot IO CalcState Statement (CalcError \/ CalcResp)
-calculatorBot = do
-  statement <- ask
-  state $ execCalculator statement
+calculatorBot = ask >>= state . execCalculator
 
-parseErrorBot :: Monad m => Bot m s ParseError T.Text
-parseErrorBot = pureStatelessBot $ \ParseError {..} ->
-  "Failed to parse msg: \""
-    <> parseInput
-    <> "\". Error message was: \""
-    <> parseError
-    <> "\"."
+calculatorBot' :: Bot IO CalcState Text Text
+calculatorBot' = S.simplifyBot calculatorBot calculatorSerializer
 
-simplifyCalculatorBot ::
-  Monad m =>
-  Bot m s Statement (CalcError \/ CalcResp) ->
-  Bot m s T.Text T.Text
-simplifyCalculatorBot bot =
-  dimap parseStatement indistinct $ parseErrorBot \/ rmap printCalcOutput bot
+calculatorMatrixBot :: Bot IO CalcState (RoomID, Event) (RoomID, Event)
+calculatorMatrixBot = embedTextBot calculatorBot'
 
-printCalcOutput :: Either CalcError CalcResp -> T.Text
-printCalcOutput = \case
-  Left err -> T.pack $ show err
+--------------------------------------------------------------------------------
+
+calculatorSerializer :: TextSerializer (CalcError \/ CalcResp) Statement
+calculatorSerializer = S.Serializer {parser, printer}
+
+parser :: Text -> Maybe Statement
+parser = either (const Nothing) Just . parseOnly statementP
+
+printer :: Either CalcError CalcResp -> Text
+printer = \case
+  Left err -> Text.pack $ show err
   Right Ack -> "*variable saved*"
-  Right (Log e n) -> T.pack $ show e <> " = " <> show n
+  Right (Log e n) -> Text.pack $ show e <> " = " <> show n

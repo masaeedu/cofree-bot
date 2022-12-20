@@ -7,17 +7,13 @@ module Main where
 
 import CofreeBot.Bot (Behavior, Bot (..), fixBot)
 import CofreeBot.Bot.Behaviors.Calculator
-  ( calculatorBot,
-    printCalcOutput,
-    simplifyCalculatorBot,
-  )
-import CofreeBot.Bot.Behaviors.Calculator.Language (statementP)
-import CofreeBot.Bot.Behaviors.Hello (helloSimpleBot)
+import CofreeBot.Bot.Behaviors.Hello
 import CofreeBot.Bot.Context (sessionize, simplifySessionBot)
 import Data.Text (Text, pack)
 import Scripts (Script, mkScript)
 import Test.Hspec (Spec, describe, hspec, it, shouldNotBe)
 import TestServer (Completion (..), conformsToScript, conformsToScript')
+import qualified CofreeBot.Bot.Serialization as S
 
 --------------------------------------------------------------------------------
 
@@ -57,7 +53,7 @@ scriptedTestsSpec = describe "Scripted tests" $ do
 helloBotSpec :: Spec
 helloBotSpec =
   describe "Hello Bot" $ do
-    let bot = helloSimpleBot
+    let bot = S.simplifyBot helloBot helloBotSerializer
     it "responds to precisely its trigger phrase" $ do
       fixBot bot ()
         `conformsToScript` [mkScript|
@@ -75,7 +71,7 @@ helloBotSpec =
 calculatorBotSpec :: Spec
 calculatorBotSpec =
   describe "Calculator Bot" $ do
-    let bot = simplifyCalculatorBot calculatorBot
+    let bot = S.simplifyBot calculatorBot calculatorSerializer
     it "performs arithmetic" $ do
       fixBot bot mempty
         `conformsToScript` [mkScript|
@@ -99,7 +95,7 @@ calculatorBotSpec =
 sessionizedBotSpec :: Spec
 sessionizedBotSpec =
   describe "Sessionized Bot" $ do
-    let bot = simplifySessionBot printCalcOutput statementP $ sessionize mempty $ calculatorBot
+    let bot = simplifySessionBot printer statementP $ sessionize mempty $ calculatorBot
     it "can instantiate a session" $ do
       fixBot bot mempty
         `conformsToScript` [mkScript|
