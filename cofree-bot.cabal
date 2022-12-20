@@ -95,9 +95,9 @@ library
     CofreeBot.Bot.Behaviors.Magic8Ball
     CofreeBot.Bot.Behaviors.Updog
     CofreeBot.Bot.Context
+    CofreeBot.Bot.Serialization
     CofreeBot.Utils
     CofreeBot.Utils.ListT
-    Parsing
 
   build-depends:
     , aeson
