@@ -3,8 +3,10 @@
 
 module Main where
 
+--------------------------------------------------------------------------------
+
 import CofreeBot
-import CofreeBot.Bot.Behaviors.Calculator.Language
+import CofreeBot.Bot.Serialization qualified as S
 import Control.Monad
 import Control.Monad.Except
   ( ExceptT,
@@ -18,6 +20,8 @@ import Options.Applicative qualified as Opt
 import OptionsParser
 import System.Environment.XDG.BaseDir (getUserCacheDir)
 import System.Process.Typed
+
+--------------------------------------------------------------------------------
 
 main :: IO ()
 main = do
@@ -33,30 +37,36 @@ main = do
       matrixMain session xdgCache
     CLI -> cliMain xdgCache
 
-bot process =
-  let calcBot =
-        embedTextBot $
-          simplifySessionBot printCalcOutput statementP $
-            sessionize mempty $
-              calculatorBot
-      helloBot = helloMatrixBot
-      coinFlipBot' = embedTextBot $ simplifyCoinFlipBot coinFlipBot
-      ghciBot' = embedTextBot $ ghciBot process
-      magic8BallBot' = embedTextBot $ simplifyMagic8BallBot magic8BallBot
-   in calcBot
-        /.\ coinFlipBot'
-        /.\ helloBot
-        /.\ ghciBot'
-        /.\ magic8BallBot'
-        /.\ updogMatrixBot
-        /.\ embedTextBot jitsiBot
+--------------------------------------------------------------------------------
+
+bot' process =
+  helloBot @_ @() -- <----- polymorphic states need to get asserted to a monoid
+    /+\ updogBot @_ @()
+    /+\ coinFlipBot
+    /+\ magic8BallBot
+    /+\ jitsiBot
+    /+\ ghciBot process
+    /+\ sessionize mempty calculatorBot
+
+serializer' =
+  helloBotSerializer
+    S./+\ updogSerializer
+    S./+\ coinFlipSerializer
+    S./+\ magic8BallSerializer
+    S./+\ jitsiSerializer
+    S./+\ ghciSerializer
+    S./+\ sessionSerializer calculatorSerializer
+
+bot process = S.simplifyBot (bot' process) serializer'
+
+--------------------------------------------------------------------------------
 
 cliMain :: FilePath -> IO ()
 cliMain xdgCache = withProcessWait_ ghciConfig $ \process -> do
   void $ threadDelay 1e6
   void $ hGetOutput (getStdout process)
   state <- readState xdgCache
-  fixedBot <- flip (fixBotPersistent xdgCache) (fold state) $ simplifyMatrixBot $ bot process
+  fixedBot <- flip (fixBotPersistent xdgCache) (fold state) $ bot process
   void $ loop $ annihilate repl fixedBot
 
 unsafeCrashInIO :: Show e => ExceptT e IO a -> IO a
@@ -67,5 +77,5 @@ matrixMain session xdgCache = withProcessWait_ ghciConfig $ \process -> do
   void $ threadDelay 1e6
   void $ hGetOutput (getStdout process)
   state <- readState xdgCache
-  fixedBot <- flip (fixBotPersistent xdgCache) (fold state) $ hoistBot liftIO $ bot process
-  unsafeCrashInIO $ loop $ annihilate (matrix session xdgCache) $ batch fixedBot
+  fixedBot <- flip (fixBotPersistent xdgCache) (fold state) $ embedTextBot $ hoistBot liftIO $ bot process
+  unsafeCrashInIO $ loop $ annihilate (matrix session xdgCache) $ batch $ fixedBot
