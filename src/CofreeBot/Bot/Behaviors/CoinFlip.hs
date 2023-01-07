@@ -25,7 +25,7 @@ coinFlipBot :: Bot IO () () Bool
 coinFlipBot = randomIO
 
 coinFlipMatrixBot :: Bot IO () (RoomID, Event) (RoomID, Event)
-coinFlipMatrixBot = embedTextBot $ S.simplifyBot coinFlipBot coinFlipSerializer
+coinFlipMatrixBot = embedTextBot $ S.translate coinFlipBot coinFlipSerializer
 
 --------------------------------------------------------------------------------
 

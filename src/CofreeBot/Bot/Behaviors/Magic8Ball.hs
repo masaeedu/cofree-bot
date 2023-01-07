@@ -25,7 +25,7 @@ magic8BallBot = do
   randomRIO (1, 20)
 
 magic8BallMatrixBot :: Bot IO () (RoomID, Event) (RoomID, Event)
-magic8BallMatrixBot = embedTextBot $ S.simplifyBot magic8BallBot magic8BallSerializer
+magic8BallMatrixBot = embedTextBot $ S.translate magic8BallBot magic8BallSerializer
 
 --------------------------------------------------------------------------------
 

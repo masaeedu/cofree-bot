@@ -33,7 +33,7 @@ calculatorBot :: Bot IO CalcState Statement (CalcError \/ CalcResp)
 calculatorBot = ask >>= state . execCalculator
 
 calculatorBot' :: Bot IO CalcState Text Text
-calculatorBot' = S.simplifyBot calculatorBot calculatorSerializer
+calculatorBot' = S.translate calculatorBot calculatorSerializer
 
 calculatorMatrixBot :: Bot IO CalcState (RoomID, Event) (RoomID, Event)
 calculatorMatrixBot = embedTextBot calculatorBot'

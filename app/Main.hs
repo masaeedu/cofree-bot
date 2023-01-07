@@ -57,7 +57,7 @@ serializer' =
     S./+\ ghciSerializer
     S./+\ sessionSerializer calculatorSerializer
 
-bot process = S.simplifyBot (bot' process) serializer'
+bot process = S.translate (bot' process) serializer'
 
 --------------------------------------------------------------------------------
 

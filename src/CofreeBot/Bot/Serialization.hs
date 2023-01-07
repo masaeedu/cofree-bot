@@ -11,12 +11,12 @@ import Data.These
 
 --------------------------------------------------------------------------------
 
-simplifyBot ::
+translate ::
   Monad m =>
   Bot m s bi bo ->
   Serializer so si bo bi ->
   Bot m s so si
-simplifyBot (Bot bot) (Serializer parser printer) = Bot $ \s i ->
+translate (Bot bot) (Serializer parser printer) = Bot $ \s i ->
   case parser i of
     Nothing -> emptyListT
     Just i' -> do

@@ -41,7 +41,7 @@ ghciBot p = Bot $
     pure (Text.pack o, s)
 
 ghciMatrixBot :: Process Handle Handle () -> Bot IO () (RoomID, Event) (RoomID, Event)
-ghciMatrixBot handle = embedTextBot $ S.simplifyBot (ghciBot handle) ghciSerializer
+ghciMatrixBot handle = embedTextBot $ S.translate (ghciBot handle) ghciSerializer
 
 --------------------------------------------------------------------------------
 

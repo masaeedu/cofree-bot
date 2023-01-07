@@ -25,7 +25,7 @@ jitsiBot :: Bot IO () () Text
 jitsiBot = liftEffect jitsiUrl
 
 jitsiMatrixBot :: Bot IO () (RoomID, Event) (RoomID, Event)
-jitsiMatrixBot = embedTextBot $ S.simplifyBot jitsiBot jitsiSerializer
+jitsiMatrixBot = embedTextBot $ S.translate jitsiBot jitsiSerializer
 
 --------------------------------------------------------------------------------
 

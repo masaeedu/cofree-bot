@@ -31,7 +31,7 @@ updogBot = Bot $ \s -> \case
   OPP -> toListT [("yo, you know me!", s), ("HAH GOTTEM", s)]
 
 updogMatrixBot :: Monad m => Bot m () (RoomID, Event) (RoomID, Event)
-updogMatrixBot = embedTextBot $ S.simplifyBot updogBot updogSerializer
+updogMatrixBot = embedTextBot $ S.translate updogBot updogSerializer
 
 --------------------------------------------------------------------------------
 

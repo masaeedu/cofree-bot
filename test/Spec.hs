@@ -53,7 +53,7 @@ scriptedTestsSpec = describe "Scripted tests" $ do
 helloBotSpec :: Spec
 helloBotSpec =
   describe "Hello Bot" $ do
-    let bot = S.simplifyBot helloBot helloBotSerializer
+    let bot = S.translate helloBot helloBotSerializer
     it "responds to precisely its trigger phrase" $ do
       fixBot bot ()
         `conformsToScript` [mkScript|
@@ -71,7 +71,7 @@ helloBotSpec =
 calculatorBotSpec :: Spec
 calculatorBotSpec =
   describe "Calculator Bot" $ do
-    let bot = S.simplifyBot calculatorBot calculatorSerializer
+    let bot = S.translate calculatorBot calculatorSerializer
     it "performs arithmetic" $ do
       fixBot bot mempty
         `conformsToScript` [mkScript|
@@ -95,7 +95,7 @@ calculatorBotSpec =
 sessionizedBotSpec :: Spec
 sessionizedBotSpec =
   describe "Sessionized Bot" $ do
-    let bot = S.simplifyBot (sessionize mempty calculatorBot) (sessionSerializer calculatorSerializer)
+    let bot = S.translate (sessionize mempty calculatorBot) (sessionSerializer calculatorSerializer)
     it "can instantiate a session" $ do
       fixBot bot mempty
         `conformsToScript` [mkScript|

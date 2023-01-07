@@ -30,7 +30,7 @@ helloBot = Bot $ \s () -> pure ("Are you talking to me, punk?", s)
 -- | We can then embed our bot in the Matrix API using
 -- 'liftSimpleBot'.
 helloMatrixBot :: Monad m => Bot m () (RoomID, Event) (RoomID, Event)
-helloMatrixBot = embedTextBot $ S.simplifyBot helloBot helloBotSerializer
+helloMatrixBot = embedTextBot $ S.translate helloBot helloBotSerializer
 
 --------------------------------------------------------------------------------
 
