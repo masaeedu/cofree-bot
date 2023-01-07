@@ -8,12 +8,12 @@ module Main where
 import CofreeBot.Bot (Behavior, Bot (..), fixBot)
 import CofreeBot.Bot.Behaviors.Calculator
 import CofreeBot.Bot.Behaviors.Hello
-import CofreeBot.Bot.Context (sessionize, simplifySessionBot)
+import CofreeBot.Bot.Context (sessionSerializer, sessionize)
+import CofreeBot.Bot.Serialization qualified as S
 import Data.Text (Text, pack)
 import Scripts (Script, mkScript)
 import Test.Hspec (Spec, describe, hspec, it, shouldNotBe)
 import TestServer (Completion (..), conformsToScript, conformsToScript')
-import qualified CofreeBot.Bot.Serialization as S
 
 --------------------------------------------------------------------------------
 
@@ -95,7 +95,7 @@ calculatorBotSpec =
 sessionizedBotSpec :: Spec
 sessionizedBotSpec =
   describe "Sessionized Bot" $ do
-    let bot = simplifySessionBot printer statementP $ sessionize mempty $ calculatorBot
+    let bot = S.simplifyBot (sessionize mempty calculatorBot) (sessionSerializer calculatorSerializer)
     it "can instantiate a session" $ do
       fixBot bot mempty
         `conformsToScript` [mkScript|
