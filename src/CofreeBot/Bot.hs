@@ -43,7 +43,6 @@ module CofreeBot.Bot
     -- * Matrix Bot
     MatrixBot,
     matrix,
-    simplifyMatrixBot,
     embedTextBot,
 
     -- * Text Bot
@@ -431,13 +430,6 @@ matrix session cache = Server $ do
 
           -- Do it again
           runServer $ go filterId (Just newSince)
-
--- | Map the input and output of a 'MatrixBot' to allow for simple
--- 'T.Text' I/O.
-simplifyMatrixBot :: Monad m => MatrixBot m s -> TextBot m s
-simplifyMatrixBot (Bot bot) = Bot $ \s i -> do
-  (responses, nextState) <- bot s (RoomID mempty, mkMsg i)
-  pure (viewBody $ snd responses, nextState)
 
 embedTextBot :: Functor m => TextBot m s -> MatrixBot m s
 embedTextBot (Bot bot) = Bot $ \s (rid, i) ->
