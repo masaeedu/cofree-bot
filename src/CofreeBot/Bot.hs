@@ -453,8 +453,8 @@ mkMsg msg =
 --------------------------------------------------------------------------------
 -- Text Bot
 
--- | A 'SimpleBot' maps from 'Text' to '[Text]'. Lifting into a
--- 'SimpleBot' is useful for locally debugging another bot.
+-- | A 'TextBot' maps from 'Text' to '[Text]'. Lifting into a
+-- 'TextBot' is useful for locally debugging another bot.
 type TextBot m s = Bot m s T.Text T.Text
 
 -- | A repl-style 'Server' for interacting with a 'Bot'.
